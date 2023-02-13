@@ -1,0 +1,24 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: foo-app
+  namespace: default
+  labels:
+    app: foo-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: foo-app
+  template:
+    metadata:
+      labels:
+        app: foo-app
+    spec:
+      containers:
+      - image: "public.ecr.aws/i4a3l2a7/probeserver:latest"
+        name: foo-app
+        env:
+          - name: CONTENT
+            value: '{ "version": "1.0.0" }'
