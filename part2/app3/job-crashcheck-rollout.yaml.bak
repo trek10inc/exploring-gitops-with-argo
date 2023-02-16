@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rollout-crashcheck-job
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: rollout-crashcheck-job
+    spec:
+      restartPolicy: Never
+      serviceAccountName: read-pod-status-sa
+      containers:
+      - name: crashcheck
+        image: public.ecr.aws/i4a3l2a7/crashcheck:latest
+        env:
+        - name: HASH
+          value: "{{ args.pod-hash }}"
+        - name: INTERVAL
+          value: '3'
+        - name: DURATION
+          value: '99999999'
+        - name: CRASH_LIMIT
+          value: '5'
+        - name: DEBUG
+          value: '1'

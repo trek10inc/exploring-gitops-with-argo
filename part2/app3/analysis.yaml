@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: analysis-webcheck
+spec:
+  metrics:
+  - name: analysis-webcheck
+    # initialDelay: 10s
+    provider:
+      job:
+        spec:
+          backoffLimit: 0
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+              - name: webcheck
+                image: public.ecr.aws/i4a3l2a7/webcheck:latest
+                env:
+                - name: URL
+                  value: 'http://192.168.0.161:30090/healthz'
+                - name: INTERVAL
+                  value: '3'
+                - name: DURATION
+                  value: '99999999'
+                - name: FAILURE_LIMIT
+                  value: '5'
+                - name: JQ_PARSER
+                  value: '.status'
+                - name: EXPECTED_RESPONSE
+                  value: 'ok'
+                - name: TIMEOUT
+                  value: '3'
+                - name: DEBUG
+                  value: '1'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: analysis-crashcheck
+spec:
+  args:
+  - name: pod-hash
+  metrics:
+  - name: analysis-crashcheck
+    # initialDelay: 10s
+    provider:
+      job:
+        spec:
+          backoffLimit: 0
+          template:
+            spec:
+              restartPolicy: Never
+              serviceAccountName: read-pod-status-sa
+              containers:
+              - name: crashcheck
+                image: public.ecr.aws/i4a3l2a7/crashcheck:latest
+                env:
+                - name: HASH
+                  value: "{{ args.pod-hash }}"
+                - name: INTERVAL
+                  value: '3'
+                - name: DURATION
+                  value: '99999999'
+                - name: CRASH_LIMIT
+                  value: '5'
+                - name: DEBUG
+                  value: '1'
